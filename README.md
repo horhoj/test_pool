@@ -1,8 +1,8 @@
-# Личная сборка бойлерплэйта для новых проектов.
+# тестовое задание для вашей компании.
 
 # Используется: 
 
-vite, react, typescript, redux-tookit, docker(docker-compose), nginx (для раздачи статики билда), eslint + prettier
+vite, react, typescript docker(docker-compose), nginx (для раздачи статики билда), eslint + prettier
 
 # запуск
 
