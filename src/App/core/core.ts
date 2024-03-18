@@ -1,10 +1,13 @@
+import { ContextMenuDataSetter } from '../App.types';
 import { Ball, BallData } from './ball';
+import { Color } from './color';
 
-const CANVAS_WIDTH = 400;
+const CANVAS_WIDTH = 700;
 const CANVAS_HEIGHT = 500;
 
 const FRICTION_COEFFICIENT = 0.02;
 const RANDOMIZE_ANGLE_COEFFICIENT = 5;
+const PUNCH_MOVE_POWER = 20;
 
 export class Core {
   private root: HTMLDivElement;
@@ -15,6 +18,7 @@ export class Core {
   private currentBallIndex: number | null = null;
   private isLeftMouseDown: boolean = false;
   private moveStartPoint: { x: number; y: number } | null = null;
+  private contextMenuDataSetter: ContextMenuDataSetter | null = null;
 
   public constructor(root: HTMLDivElement) {
     this.root = root;
@@ -28,6 +32,7 @@ export class Core {
     this.canvas.addEventListener('mousedown', this.mouseDown);
     window.addEventListener('mousemove', this.mouseMove);
     window.addEventListener('mouseup', this.mouseUp);
+    this.canvas.addEventListener('contextmenu', this.contextMenu);
   }
 
   private clear = () => {
@@ -117,12 +122,21 @@ export class Core {
         }
       });
       this.isMoving = isMoving;
+      if (isMoving) {
+        this.currentBallIndex = null;
+        if (this.contextMenuDataSetter) {
+          this.contextMenuDataSetter(null);
+        }
+      }
 
       requestAnimationFrame(this.frame);
     }
   };
 
   private mouseDown = (e: MouseEvent) => {
+    if (e.button !== 0) {
+      return;
+    }
     if (this.canvas) {
       this.isLeftMouseDown = true;
       const { left, top } = this.canvas.getBoundingClientRect();
@@ -133,12 +147,22 @@ export class Core {
   };
 
   private mouseUp = (e: MouseEvent) => {
+    // console.log(e.button);
+    if (e.button !== 0) {
+      return;
+    }
+
     if (this.canvas && this.moveStartPoint && this.currentBallIndex !== null) {
       const { left, top } = this.canvas.getBoundingClientRect();
       const x = e.clientX - left;
       const y = e.clientY - top;
       const deltaX = x - this.moveStartPoint.x;
       const deltaY = y - this.moveStartPoint.y;
+      if (deltaX === 0 && deltaY === 0) {
+        this.moveStartPoint = null;
+        this.isLeftMouseDown = false;
+        return;
+      }
       const angleAbs = Math.atan(Math.abs(deltaY / deltaX)) * (180 / Math.PI);
       let angle = 0;
       if (deltaX >= 0 && deltaY <= 0) {
@@ -154,7 +178,7 @@ export class Core {
         angle = 270 + (90 - angleAbs);
       }
       this.balls[this.currentBallIndex].data.moveAngle = angle;
-      this.balls[this.currentBallIndex].data.movePower = 10;
+      this.balls[this.currentBallIndex].data.movePower = PUNCH_MOVE_POWER;
     }
     this.moveStartPoint = null;
     this.currentBallIndex = null;
@@ -183,7 +207,30 @@ export class Core {
     }
   };
 
+  private contextMenu = (e: MouseEvent) => {
+    e.preventDefault();
+    if (this.currentBallIndex !== null && this.contextMenuDataSetter !== null) {
+      this.contextMenuDataSetter({
+        ballIndex: this.currentBallIndex,
+        x: e.x,
+        y: e.y,
+      });
+    }
+  };
+
+  public setContextMenuDataSetter(
+    contextMenuDataSetter: ContextMenuDataSetter,
+  ) {
+    this.contextMenuDataSetter = contextMenuDataSetter;
+  }
+
   public addBall(ballData: BallData) {
     this.balls.push(new Ball(ballData));
+  }
+
+  public setBallColor(index: number, color: Color) {
+    if (this.balls[index]) {
+      this.balls[index].data.color = color;
+    }
   }
 }
