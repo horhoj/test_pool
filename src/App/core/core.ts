@@ -7,7 +7,7 @@ const CANVAS_HEIGHT = 500;
 
 const FRICTION_COEFFICIENT = 0.02;
 const RANDOMIZE_ANGLE_COEFFICIENT = 5;
-const PUNCH_MOVE_POWER = 20;
+const PUNCH_MOVE_POWER = 15;
 
 export class Core {
   private root: HTMLDivElement;

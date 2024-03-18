@@ -55,7 +55,7 @@ export const BALL_DATA_LIST: BallData[] = [
   {
     x: 600,
     y: 200,
-    r: 50,
+    r: 35,
     color: Color.blue,
     moveAngle: 0,
     movePower: 0,
